@@ -95,7 +95,7 @@
     ros::Publisher _velcmd_pub = _n.advertise<geometry_msgs::TwistStamped>("/drone/ibvs_vel", 0);
     ros::Publisher flag_pub = _n.advertise<std_msgs::Bool>("/drone/camera/tag_flag", 0);
  		ros::Publisher _vs_pub = _n.advertise< std_msgs::Float64MultiArray >("/drone/tag_pos_px_corner", 0);
-
+    
    // ros::Subscriber ee_sub = _n.subscribe("/drone/ee_pos_corner", 1000, ee_pointsCallback);
     ros::Rate loop_rate( 1000 );
     ros::spinOnce();
@@ -198,7 +198,7 @@
       // g.setImageTopic( "/iris/usb_cam/image_raw" );
       // g.setCameraInfoTopic( "/iris/usb_cam/camera_info" );
        g.setImageTopic( "/iris_fpv_depth_cam/cam/image_raw" );
-       g.setCameraInfoTopic( "/iris_fpv_depth_cam/cam/camera_info" );
+       g.setCameraInfoTopic("/iris_fpv_depth_cam/cam/camera_info" );
       //  g.setImageTopic( "/usb_cam/image_raw" );
       //  g.setCameraInfoTopic( "/usb_cam/camera_info" );
        g.open( argc, argv );
@@ -207,8 +207,9 @@
        std::cout << "Image size: " << I.getWidth() << " x " << I.getHeight() << std::endl;
        vpCameraParameters cam; 
       
-       g.getCameraInfo( cam );
-
+       //g.getCameraInfo(cam);
+       //if ( g.getCameraInfo( cam ) == false )
+       cam.initPersProjWithoutDistortion( I.getWidth(), I.getHeight(), I.getWidth() / 2, I.getHeight() / 2 );
        if (opt_verbose) {
          cam.printParameters();
        }
@@ -223,7 +224,7 @@
        vpDisplay::flush(I);
        double time_since_last_display = vpTime::measureTimeMs();
   
-       vpPlot plotter(1, 700, 700, orig_displayX + static_cast<int>(I.getWidth()) + 20, orig_displayY,
+       vpPlot plotter(1, I.getWidth(),  I.getHeight() , orig_displayX + static_cast<int>(I.getWidth()) + 20, orig_displayY,
                       "Visual servoing tasks");
        unsigned int iter = 0;
   
@@ -521,7 +522,7 @@
   
              // Display visual features
              vpDisplay::displayPolygon(I, vec_ip, vpColor::green,
-                                       3); // Current polygon used to compure an moment
+                                       3); // Current polygon used to compure a moment
              vpDisplay::displayCross(I, detector.getCog(0), 15, vpColor::green,
                                      3); // Current polygon used to compute a moment
              vpDisplay::displayLine(I, 0, static_cast<int>(cam.get_u0()), static_cast<int>(I.getHeight()) - 1,
